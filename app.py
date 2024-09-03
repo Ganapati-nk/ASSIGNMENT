@@ -123,35 +123,48 @@ def main():
             st.write("Data Preview:")
             st.dataframe(df.head())
             
-            st.sidebar.header("Data Processing")
-            fillna_method = st.sidebar.selectbox("Select Fill NA Method", ["Fill with Mean", "Drop Rows with NA"])
-            df = preprocess_data(df, fillna_method)
+            # Tabs for different sections
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(["Handle Missing Values", "Statistical Summary", "Trend Analysis", "Custom Visualization", "PCA & Clustering"])
             
-            st.sidebar.header("Trend Analysis")
-            x_col = st.sidebar.selectbox("Select X-axis column for trend analysis", df.columns)
-            y_col = st.sidebar.selectbox("Select Y-axis column for trend analysis", df.columns)
-            if st.sidebar.button("Analyze Trends"):
-                analyze_trends(df, x_col, y_col)
+            with tab1:
+                st.header("Handle Missing Values")
+                fillna_method = st.selectbox("Select Fill NA Method", ["Fill with Mean", "Drop Rows with NA"])
+                df = preprocess_data(df, fillna_method)
+                st.write("Data after handling missing values:")
+                st.dataframe(df.head())
+                
+            with tab2:
+                st.header("Descriptive Statistics")
+                st.write(df.describe())
+                
+            with tab3:
+                st.header("Trend Analysis")
+                x_col = st.selectbox("Select X-axis column for trend analysis", df.columns)
+                y_col = st.selectbox("Select Y-axis column for trend analysis", df.columns)
+                if st.button("Analyze Trends"):
+                    analyze_trends(df, x_col, y_col)
             
-            st.sidebar.header("Custom Visualization")
-            x_col_plot = st.sidebar.selectbox("Select X-axis column for plot", df.columns)
-            y_col_plot = st.sidebar.selectbox("Select Y-axis column for plot", df.columns)
-            plot_type = st.sidebar.selectbox("Select the type of plot", ["Line Plot", "Bar Plot", "Scatter Plot", "Histogram", "Box Plot"])
-            if st.sidebar.button("Generate Plot"):
-                plot_img_path = generate_custom_plot(df, x_col_plot, y_col_plot, plot_type)
-                st.image(plot_img_path)
+            with tab4:
+                st.header("Custom Visualization")
+                x_col_plot = st.selectbox("Select X-axis column for plot", df.columns)
+                y_col_plot = st.selectbox("Select Y-axis column for plot", df.columns)
+                plot_type = st.selectbox("Select the type of plot", ["Line Plot", "Bar Plot", "Scatter Plot", "Histogram", "Box Plot"])
+                if st.button("Generate Plot"):
+                    plot_img_path = generate_custom_plot(df, x_col_plot, y_col_plot, plot_type)
+                    st.image(plot_img_path)
             
-            st.sidebar.header("PCA and Clustering")
-            n_clusters = st.sidebar.slider("Select number of clusters for KMeans", min_value=2, max_value=10, value=3)
-            if st.sidebar.button("Perform PCA"):
-                pca_results, pca_img_path = perform_pca(df)
-                st.image(pca_img_path)
-                st.write("Explained Variance Ratios:", pca_results['explained_variance'])
-            
-            if st.sidebar.button("Perform KMeans Clustering"):
-                df_with_clusters, kmeans_img_path = perform_kmeans(df, n_clusters)
-                st.image(kmeans_img_path)
-                st.write("Cluster Distribution:", df_with_clusters['Cluster'].value_counts())
+            with tab5:
+                st.header("PCA & Clustering")
+                n_clusters = st.slider("Select number of clusters for KMeans", min_value=2, max_value=10, value=3)
+                if st.button("Perform PCA"):
+                    pca_results, pca_img_path = perform_pca(df)
+                    st.image(pca_img_path)
+                    st.write("Explained Variance Ratios:", pca_results['explained_variance'])
+                
+                if st.button("Perform KMeans Clustering"):
+                    df_with_clusters, kmeans_img_path = perform_kmeans(df, n_clusters)
+                    st.image(kmeans_img_path)
+                    st.write("Cluster Distribution:", df_with_clusters['Cluster'].value_counts())
             
 if __name__ == "__main__":
     main()
