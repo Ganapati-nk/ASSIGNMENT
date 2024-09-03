@@ -113,7 +113,7 @@ def perform_kmeans(df, n_clusters):
 # Streamlit App
 def main():
     st.title("AI Employee for Data Analysis and Reporting")
-    
+
     file = st.file_uploader("Upload your dataset", type=['csv', 'json', 'xlsx'])
     if file:
         file_type = st.selectbox("Select file type", ["CSV", "JSON", "Excel"])
@@ -122,29 +122,32 @@ def main():
         if df is not None:
             st.write("Data Preview:")
             st.dataframe(df.head())
+
+            # Sidebar for navigation
+            option = st.sidebar.radio(
+                "Select a section",
+                ["Handle Missing Values", "Statistical Summary", "Trend Analysis", "Custom Visualization", "PCA & Clustering"]
+            )
             
-            # Tabs for different sections
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(["Handle Missing Values", "Statistical Summary", "Trend Analysis", "Custom Visualization", "PCA & Clustering"])
-            
-            with tab1:
+            if option == "Handle Missing Values":
                 st.header("Handle Missing Values")
                 fillna_method = st.selectbox("Select Fill NA Method", ["Fill with Mean", "Drop Rows with NA"])
                 df = preprocess_data(df, fillna_method)
                 st.write("Data after handling missing values:")
                 st.dataframe(df.head())
-                
-            with tab2:
+            
+            elif option == "Statistical Summary":
                 st.header("Descriptive Statistics")
                 st.write(df.describe())
                 
-            with tab3:
+            elif option == "Trend Analysis":
                 st.header("Trend Analysis")
                 x_col = st.selectbox("Select X-axis column for trend analysis", df.columns)
                 y_col = st.selectbox("Select Y-axis column for trend analysis", df.columns)
                 if st.button("Analyze Trends"):
                     analyze_trends(df, x_col, y_col)
             
-            with tab4:
+            elif option == "Custom Visualization":
                 st.header("Custom Visualization")
                 x_col_plot = st.selectbox("Select X-axis column for plot", df.columns)
                 y_col_plot = st.selectbox("Select Y-axis column for plot", df.columns)
@@ -153,7 +156,7 @@ def main():
                     plot_img_path = generate_custom_plot(df, x_col_plot, y_col_plot, plot_type)
                     st.image(plot_img_path)
             
-            with tab5:
+            elif option == "PCA & Clustering":
                 st.header("PCA & Clustering")
                 n_clusters = st.slider("Select number of clusters for KMeans", min_value=2, max_value=10, value=3)
                 if st.button("Perform PCA"):
@@ -165,6 +168,6 @@ def main():
                     df_with_clusters, kmeans_img_path = perform_kmeans(df, n_clusters)
                     st.image(kmeans_img_path)
                     st.write("Cluster Distribution:", df_with_clusters['Cluster'].value_counts())
-            
+
 if __name__ == "__main__":
     main()
