@@ -6,8 +6,6 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-import os
-import json
 
 # Load Data
 def load_data(file, file_type):
@@ -75,7 +73,7 @@ def perform_pca(df):
     pca_result = pca.fit_transform(scaled_data)
     pca_results['explained_variance'] = pca.explained_variance_ratio_
     pca_results['components'] = pca.components_
-    
+
     fig, ax = plt.subplots()
     ax.scatter(pca_result[:, 0], pca_result[:, 1])
     ax.set_xlabel('Principal Component 1')
@@ -84,7 +82,7 @@ def perform_pca(df):
     pca_img_path = 'pca_result.png'
     plt.savefig(pca_img_path)
     plt.close()
-    
+
     return pca_results, pca_img_path
 
 # KMeans Clustering
@@ -98,7 +96,7 @@ def perform_kmeans(df, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     clusters = kmeans.fit_predict(scaled_data)
     df['Cluster'] = clusters
-    
+
     fig, ax = plt.subplots()
     ax.scatter(df.iloc[:, 0], df.iloc[:, 1], c=df['Cluster'], cmap='viridis')
     ax.set_xlabel(df.columns[0])
@@ -107,7 +105,7 @@ def perform_kmeans(df, n_clusters):
     kmeans_img_path = 'kmeans_result.png'
     plt.savefig(kmeans_img_path)
     plt.close()
-    
+
     return df, kmeans_img_path
 
 # Streamlit App
@@ -118,53 +116,55 @@ def main():
     if file:
         file_type = st.selectbox("Select file type", ["CSV", "JSON", "Excel"])
         df = load_data(file, file_type)
-        
+
         if df is not None:
             st.write("Data Preview:")
             st.dataframe(df.head())
 
-            # Sidebar for navigation
+            st.sidebar.title("Navigation")
             option = st.sidebar.radio(
                 "Select a section",
                 ["Handle Missing Values", "Statistical Summary", "Trend Analysis", "Custom Visualization", "PCA & Clustering"]
             )
-            
+
             if option == "Handle Missing Values":
-                st.header("Handle Missing Values")
-                fillna_method = st.selectbox("Select Fill NA Method", ["Fill with Mean", "Drop Rows with NA"])
+                st.sidebar.header("Data Processing")
+                fillna_method = st.sidebar.selectbox("Select Fill NA Method", ["Fill with Mean", "Drop Rows with NA"])
                 df = preprocess_data(df, fillna_method)
                 st.write("Data after handling missing values:")
                 st.dataframe(df.head())
-            
+
             elif option == "Statistical Summary":
-                st.header("Descriptive Statistics")
-                st.write(df.describe())
-                
+                st.sidebar.header("Statistical Summary")
+                if st.sidebar.button("Show Statistical Summary"):
+                    st.subheader("Descriptive Statistics")
+                    st.write(df.describe())
+
             elif option == "Trend Analysis":
-                st.header("Trend Analysis")
-                x_col = st.selectbox("Select X-axis column for trend analysis", df.columns)
-                y_col = st.selectbox("Select Y-axis column for trend analysis", df.columns)
-                if st.button("Analyze Trends"):
+                st.sidebar.header("Trend Analysis")
+                x_col = st.sidebar.selectbox("Select X-axis column for trend analysis", df.columns)
+                y_col = st.sidebar.selectbox("Select Y-axis column for trend analysis", df.columns)
+                if st.sidebar.button("Analyze Trends"):
                     analyze_trends(df, x_col, y_col)
-            
+
             elif option == "Custom Visualization":
-                st.header("Custom Visualization")
-                x_col_plot = st.selectbox("Select X-axis column for plot", df.columns)
-                y_col_plot = st.selectbox("Select Y-axis column for plot", df.columns)
-                plot_type = st.selectbox("Select the type of plot", ["Line Plot", "Bar Plot", "Scatter Plot", "Histogram", "Box Plot"])
-                if st.button("Generate Plot"):
+                st.sidebar.header("Custom Visualization")
+                x_col_plot = st.sidebar.selectbox("Select X-axis column for plot", df.columns)
+                y_col_plot = st.sidebar.selectbox("Select Y-axis column for plot", df.columns)
+                plot_type = st.sidebar.selectbox("Select the type of plot", ["Line Plot", "Bar Plot", "Scatter Plot", "Histogram", "Box Plot"])
+                if st.sidebar.button("Generate Plot"):
                     plot_img_path = generate_custom_plot(df, x_col_plot, y_col_plot, plot_type)
                     st.image(plot_img_path)
-            
+
             elif option == "PCA & Clustering":
-                st.header("PCA & Clustering")
-                n_clusters = st.slider("Select number of clusters for KMeans", min_value=2, max_value=10, value=3)
-                if st.button("Perform PCA"):
+                st.sidebar.header("PCA and Clustering")
+                n_clusters = st.sidebar.slider("Select number of clusters for KMeans", min_value=2, max_value=10, value=3)
+                if st.sidebar.button("Perform PCA"):
                     pca_results, pca_img_path = perform_pca(df)
                     st.image(pca_img_path)
                     st.write("Explained Variance Ratios:", pca_results['explained_variance'])
                 
-                if st.button("Perform KMeans Clustering"):
+                if st.sidebar.button("Perform KMeans Clustering"):
                     df_with_clusters, kmeans_img_path = perform_kmeans(df, n_clusters)
                     st.image(kmeans_img_path)
                     st.write("Cluster Distribution:", df_with_clusters['Cluster'].value_counts())
